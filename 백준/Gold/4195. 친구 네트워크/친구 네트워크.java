@@ -1,51 +1,49 @@
+
+
 import java.io.*;
 import java.util.*;
 
 public class Main {
     // 유니온 파인드 클래스
     static class UnionFind {
-        // 각 원소의 부모를 저장
-        private HashMap<String, String> parent;
-        // 각 집합의 크기를 저장
-        private HashMap<String, Integer> size;
+        int[] parent;
+        int[] size;
 
-        public UnionFind() {
-            parent = new HashMap<>();
-            size = new HashMap<>();
+        public UnionFind(int n) {
+            parent = new int[n];
+            size = new int[n];
+            for(int i = 0; i < n; i++) {
+                parent[i] = i;
+                size[i] = 1;
+            }
         }
 
-        // Find 연산: 경로 압축을 적용하여 루트를 찾음
-        public String findSet(String x) {
-            if (!parent.containsKey(x)) {
-                parent.put(x, x);
-                size.put(x, 1);
-                return x;
+        // Find 연산: 경로 압축 적용
+        public int findSet(int x) {
+            if(parent[x] != x) {
+                parent[x] = findSet(parent[x]);
             }
-
-            if (!x.equals(parent.get(x))) {
-                parent.put(x, findSet(parent.get(x)));
-            }
-            return parent.get(x);
+            return parent[x];
         }
 
         // Union 연산: 두 집합을 합치고, 새로운 집합의 크기를 반환
-        public int unionSet(String x, String y) {
-            String rootX = findSet(x);
-            String rootY = findSet(y);
+        public int unionSet(int x, int y) {
+            int rootX = findSet(x);
+            int rootY = findSet(y);
 
-            if (rootX.equals(rootY)) {
-                return size.get(rootX);
+            if(rootX == rootY) {
+                return size[rootX];
             }
 
             // Union by size: 더 큰 집합을 루트로 설정
-            if (size.get(rootX) < size.get(rootY)) {
-                parent.put(rootX, rootY);
-                size.put(rootY, size.get(rootY) + size.get(rootX));
-                return size.get(rootY);
+            if(size[rootX] < size[rootY]) {
+                parent[rootX] = rootY;
+                size[rootY] += size[rootX];
+                return size[rootY];
             } else {
-                parent.put(rootY, rootX);
-                size.put(rootX, size.get(rootX) + size.get(rootY));
-                return size.get(rootX);
+                parent[rootY] = rootX;
+                size[rootX] += size[rootY];
+                return size[rootX];
             }
         }
     }
@@ -62,14 +60,32 @@ public class Main {
         for(int tc = 0; tc < T; tc++) {
             int F = Integer.parseInt(br.readLine());
 
-            UnionFind uf = new UnionFind();
+            // 이름을 정수로 매핑하기 위한 HashMap
+            HashMap<String, Integer> map = new HashMap<>();
+            int idx = 0;
+
+            // 유니온 파인드를 위한 최대 노드 수 예측
+            // 각 친구 관계마다 최대 2개의 새로운 사람이 등장할 수 있으므로 2*F로 설정
+            UnionFind uf = new UnionFind(2 * F);
 
             for(int i = 0; i < F; i++) {
                 StringTokenizer st = new StringTokenizer(br.readLine());
                 String name1 = st.nextToken();
                 String name2 = st.nextToken();
 
-                int networkSize = uf.unionSet(name1, name2);
+                // 이름을 정수로 매핑
+                if(!map.containsKey(name1)) {
+                    map.put(name1, idx++);
+                }
+                if(!map.containsKey(name2)) {
+                    map.put(name2, idx++);
+                }
+
+                int id1 = map.get(name1);
+                int id2 = map.get(name2);
+
+                // Union 연산 후 집합의 크기 반환
+                int networkSize = uf.unionSet(id1, id2);
                 sb.append(networkSize).append("\n");
             }
         }
