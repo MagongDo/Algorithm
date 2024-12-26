@@ -1,15 +1,13 @@
-
-
 import java.io.*;
 import java.util.*;
 
 public class Main {
     // 유니온 파인드 클래스
     static class UnionFind {
-        int[] parent;
-        int[] size;
+        static int[] parent;
+        static int[] size;
 
-        public UnionFind(int n) {
+        public static void initialize(int n) {
             parent = new int[n];
             size = new int[n];
             for(int i = 0; i < n; i++) {
@@ -19,7 +17,7 @@ public class Main {
         }
 
         // Find 연산: 경로 압축 적용
-        public int findSet(int x) {
+        public static int findSet(int x) {
             if(parent[x] != x) {
                 parent[x] = findSet(parent[x]);
             }
@@ -27,7 +25,7 @@ public class Main {
         }
 
         // Union 연산: 두 집합을 합치고, 새로운 집합의 크기를 반환
-        public int unionSet(int x, int y) {
+        public static int unionSet(int x, int y) {
             int rootX = findSet(x);
             int rootY = findSet(y);
 
@@ -35,7 +33,6 @@ public class Main {
                 return size[rootX];
             }
 
-            // Union by size: 더 큰 집합을 루트로 설정
             if(size[rootX] < size[rootY]) {
                 parent[rootX] = rootY;
                 size[rootY] += size[rootX];
@@ -60,13 +57,13 @@ public class Main {
         for(int tc = 0; tc < T; tc++) {
             int F = Integer.parseInt(br.readLine());
 
-            // 이름을 정수로 매핑하기 위한 HashMap
-            HashMap<String, Integer> map = new HashMap<>();
+            // 이름을 정수로 매핑하기 위한 HashMap (리해싱 최소화)
+            HashMap<String, Integer> map = new HashMap<>(F * 2);
             int idx = 0;
 
             // 유니온 파인드를 위한 최대 노드 수 예측
             // 각 친구 관계마다 최대 2개의 새로운 사람이 등장할 수 있으므로 2*F로 설정
-            UnionFind uf = new UnionFind(2 * F);
+            UnionFind.initialize(2 * F);
 
             for(int i = 0; i < F; i++) {
                 StringTokenizer st = new StringTokenizer(br.readLine());
@@ -85,7 +82,7 @@ public class Main {
                 int id2 = map.get(name2);
 
                 // Union 연산 후 집합의 크기 반환
-                int networkSize = uf.unionSet(id1, id2);
+                int networkSize = UnionFind.unionSet(id1, id2);
                 sb.append(networkSize).append("\n");
             }
         }
