@@ -1,67 +1,68 @@
+import java.io.*;
 import java.util.*;
 
-public class Main {
-    static int N, M;
-    static int[][] city;
+public class Main{
+    static int n,m;
     static List<int[]> homes = new ArrayList<>();
     static List<int[]> chickens = new ArrayList<>();
     static boolean[] selected;
-    static int minDistance = Integer.MAX_VALUE;
-
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        N = sc.nextInt();
-        M = sc.nextInt();
-        city = new int[N][N];
-
-        // 도시 정보 입력 + 집과 치킨집 위치 저장
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                city[i][j] = sc.nextInt();
-                if (city[i][j] == 1) {
-                    homes.add(new int[]{i, j});
-                } else if (city[i][j] == 2) {
-                    chickens.add(new int[]{i, j});
+    static int minAnswer= Integer.MAX_VALUE;
+    
+    public static void main(String[] args) throws IOException{
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        
+        n = Integer.parseInt(st.nextToken());
+        m= Integer.parseInt(st.nextToken());
+        
+        for(int i=0;i<n;i++){
+            st = new StringTokenizer(br.readLine());
+            for(int j=0;j<n;j++){
+                int a = Integer.parseInt(st.nextToken());
+                if(a==1){
+                    homes.add(new int[]{i,j});
                 }
+                else if(a==2){
+                    chickens.add(new int[]{i,j});
+                }
+                else continue;
             }
         }
+        selected=new boolean[chickens.size()];
 
-        selected = new boolean[chickens.size()];
-        // M개 치킨집 선택 (조합)
-        backtrack(0, 0);
+        backTracking(0, 0);
 
-        System.out.println(minDistance);
+        System.out.println(minAnswer);
+        
+        
+        
     }
-
-    // 백트래킹으로 M개의 치킨집을 선택
-    public static void backtrack(int depth, int start) {
-        if (depth == M) {
-            // 선택된 치킨집으로 치킨 거리 계산
-            int total = calculateChickenDistance();
-            minDistance = Math.min(minDistance, total);
+    public static void backTracking(int dept, int start){
+        if(dept==m){
+            int minChicken= minDistance();
+            minAnswer=Math.min(minChicken,minAnswer);
             return;
         }
-
-        for (int i = start; i < chickens.size(); i++) {
-            selected[i] = true;
-            backtrack(depth + 1, i + 1);
-            selected[i] = false;
+        
+        for(int i=start;i<chickens.size();i++){
+            selected[i]=true;
+            backTracking(dept+1,i+1);
+            selected[i]=false;
         }
     }
-
-    // 현재 선택된 치킨집 조합으로 도시의 치킨 거리 계산
-    public static int calculateChickenDistance() {
-        int sum = 0;
-        for (int[] home : homes) {
-            int min = Integer.MAX_VALUE;
-            for (int i = 0; i < chickens.size(); i++) {
-                if (selected[i]) {
-                    int[] chicken = chickens.get(i);
-                    int dist = Math.abs(home[0] - chicken[0]) + Math.abs(home[1] - chicken[1]);
-                    min = Math.min(min, dist);
+    
+    public static int minDistance(){
+        int sum=0;
+        for(int i=0;i<homes.size();i++){
+            int[] home= homes.get(i);
+            int min= Integer.MAX_VALUE;
+            for(int j=0;j<chickens.size();j++){
+                if(selected[j]){
+                    int[] chicken=chickens.get(j);
+                    min=Math.min(Math.abs(home[0]-chicken[0])+Math.abs(home[1]-chicken[1]),min);
                 }
             }
-            sum += min;
+            sum+=min;
         }
         return sum;
     }
